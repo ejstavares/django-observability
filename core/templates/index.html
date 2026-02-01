@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h2>Lista de Pessoas</h2>   
+
+
+    <form action="{% url 'save' %}" method="post">
+        {% csrf_token %}
+        <fieldset class="grid">
+            <input type="text" id="nome" name="nome" placeholder="Nome" required>
+            <input type="number" id="idade" name="idade" placeholder="Idade" required>
+            <button type="submit">Adicionar Pessoa</button>
+        </fieldset>
+    </form>
+    <hr>
+    <table  class="striped" >
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Nome</th>
+                <th scope="col">Idade</th>
+                <th scope="col" colspan="2">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pessoa in pessoas %}
+                <tr>
+                    <th scope="row">{{ pessoa.id }}</th>
+                    <td>{{ pessoa.nome }}</td>
+                    <td>{{ pessoa.idade }}</td>
+                    <td><a href="{% url 'pessoa_detail' pessoa.id %}">Editar</a></td>
+                    <td><a href="{% url 'pessoa_delete' pessoa.id %}">Excluir</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
