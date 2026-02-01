@@ -1,6 +1,6 @@
-projectKey=DemoPython
+projectKey=DemoPython2
 serverUrl=http://localhost:9000
 serverVersion=26.1.0.118079
-dashboardUrl=http://localhost:9000/dashboard?id=DemoPython
-ceTaskId=bce93970-0877-4019-83c6-28541da3244f
-ceTaskUrl=http://localhost:9000/api/ce/task?id=bce93970-0877-4019-83c6-28541da3244f
+dashboardUrl=http://localhost:9000/dashboard?id=DemoPython2
+ceTaskId=51b894cc-ad65-41c3-a667-c1e46a45b34d
+ceTaskUrl=http://localhost:9000/api/ce/task?id=51b894cc-ad65-41c3-a667-c1e46a45b34d

@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import logging
+import structlog
+from structlog.processors import JSONRenderer, TimeStamper
+from structlog.stdlib import LoggerFactory
+from structlog.contextvars import merge_contextvars
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,9 +43,14 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "core",
+    "request_id",
+    "django_prometheus",
 ]
 
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
+    "request_id.middleware.RequestIdMiddleware",
+    "core.middleware.request_logging.RequestLoggingMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -49,6 +59,10 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+REQUEST_ID_HEADER = "HTTP_X_REQUEST_ID"  # aceita X-Request-Id do gateway/proxy
+REQUEST_ID_GENERATE_IF_NOT_FOUND = True
+REQUEST_ID_RESPONSE_HEADER = "X-Request-Id"
 
 ROOT_URLCONF = "app.urls"
 
@@ -116,3 +130,42 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = "static/"
+
+### Default primary key field type
+# https://docs.djangoproject.com/en/6.0/ref/settings/#default-auto-field
+LOG_LEVEL = "INFO"
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "plain": {"format": "%(message)s"},
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "plain",
+        }
+    },
+    "root": {"handlers": ["console"], "level": LOG_LEVEL},
+    "loggers": {
+      "django": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
+      "django.request": {"handlers": ["console"], "level": "WARNING", "propagate": False},
+      "django.server": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
+    },
+}
+
+structlog.configure(
+    processors=[
+        merge_contextvars,
+        structlog.stdlib.filter_by_level,
+        TimeStamper(fmt="iso", utc=True, key="timestamp"),
+        structlog.processors.add_log_level,
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+        structlog.processors.UnicodeDecoder(),
+        JSONRenderer(),
+    ],
+    logger_factory=LoggerFactory(),
+    cache_logger_on_first_use=True,
+)

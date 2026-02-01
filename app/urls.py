@@ -22,5 +22,6 @@ from django.views.generic import RedirectView
 urlpatterns = [
     path("", RedirectView.as_view(url='core/', permanent=False)),
     path("admin/", admin.site.urls),
-    path('core/', include('core.urls'))
+    path('core/', include('core.urls')),
+    path("", include("django_prometheus.urls")),  # /metrics
 ]
