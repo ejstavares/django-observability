@@ -1,5 +1,5 @@
 logging {
-  level = "info"
+  level = "debug"
 }
 
 //////////////////////////
@@ -12,7 +12,9 @@ loki.write "loki" {
   }
 }
 
-discovery.docker "containers" {}
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
 
 loki.source.docker "docker_logs" {
   host    = "unix:///var/run/docker.sock"
@@ -20,35 +22,7 @@ loki.source.docker "docker_logs" {
 
   forward_to = [loki.write.loki.receiver]
 
-  pipeline_stages {
-    json {
-      expressions = {
-        log  = "log",
-        time = "time",
-      }
-    }
-
-    json {
-        source = "log"
-        expressions = {
-            level       = "level",
-            event       = "event",
-            request_id  = "request_id",
-            path        = "path",
-            status_code = "status_code",
-            duration_ms = "duration_ms",
-        }
-    }
-
-    labels {
-      values = {
-        level = "level",
-        event = "event",
-      }
-    }
-
-    output {
-      source = "log"
-    }
+  labels = {
+    job = "docker",
   }
 }

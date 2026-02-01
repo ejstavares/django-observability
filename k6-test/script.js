@@ -37,6 +37,10 @@ export default function () {
   {
     method: 'GET',
     url: 'http://localhost:8000/core/delete/13',
+  },
+  {
+    method: 'GET',
+    url: 'http://localhost:8000/core/exception',
   }
   /*{
     method: 'POST',

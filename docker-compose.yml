@@ -16,12 +16,28 @@ services:
     restart: unless-stopped
 
   loki:
-    image: grafana/loki:2.9.8
+    image: grafana/loki:3.6.0
     container_name: loki
     ports:
-      - "3100:3100"
-    command: -config.file=/etc/loki/local-config.yaml
+      - 3100:3100
+      - 7947:7946
+      - 9095:9095
+    command: -config.file=/mnt/config/loki-config.yaml
+    volumes:
+      - ./observability/loki/loki-config.yaml:/mnt/config/loki-config.yaml:ro
     restart: unless-stopped
+
+  # promtail:
+  #   image: grafana/promtail:3.6.0
+  #   container_name: promtail
+  #   volumes:
+  #     - /var/lib/docker/containers:/var/lib/docker/containers:ro
+  #     - ./observability/promtail/promtail.yml:/mnt/config/promtail-config.yaml:ro
+  #     - ./observability/promtail/log/:/var/log/:ro
+  #   command: -config.file=/mnt/config/promtail-config.yaml
+  #   depends_on:
+  #     - loki
+  #   restart: unless-stopped
 
   alloy:
     image: grafana/alloy:latest
@@ -29,15 +45,16 @@ services:
     ports:
       - "12345:12345" # UI + /-/reload
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./observability/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./observability/alloy/config.alloy:/etc/alloy/config.alloy
+      - alloy-data:/var/lib/alloy/data
     command:
       - run
       - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
       - /etc/alloy/config.alloy
     depends_on:
       - loki
-      - prometheus
     restart: unless-stopped
 
   grafana:
@@ -54,19 +71,9 @@ services:
     depends_on:
       - loki
     restart: unless-stopped
-  
-  prometheus:
-    image: prom/prometheus:v2.52.0
-    container_name: prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-    depends_on:
-      - web
-    restart: unless-stopped
 
 volumes:
   grafana-data:
+    name: grafana-data
+  alloy-data:
+    name: alloy-data
