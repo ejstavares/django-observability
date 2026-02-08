@@ -16,5 +16,5 @@ jobs:
           fetch-depth: 0
       - uses: SonarSource/sonarqube-scan-action@v6
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ secrets.BCA_LABS_SONAR_TOKEN_2 }}
+          SONAR_HOST_URL: ${{ secrets.BCA_LABS_SONAR_HOST_URL_2 }}
