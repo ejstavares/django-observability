@@ -14,6 +14,8 @@ services:
     depends_on:
       - loki
     restart: unless-stopped
+    networks:
+      - network-postgres
 
   loki:
     image: grafana/loki:3.6.0
@@ -26,18 +28,6 @@ services:
     volumes:
       - ./observability/loki/loki-config.yaml:/mnt/config/loki-config.yaml:ro
     restart: unless-stopped
-
-  # promtail:
-  #   image: grafana/promtail:3.6.0
-  #   container_name: promtail
-  #   volumes:
-  #     - /var/lib/docker/containers:/var/lib/docker/containers:ro
-  #     - ./observability/promtail/promtail.yml:/mnt/config/promtail-config.yaml:ro
-  #     - ./observability/promtail/log/:/var/log/:ro
-  #   command: -config.file=/mnt/config/promtail-config.yaml
-  #   depends_on:
-  #     - loki
-  #   restart: unless-stopped
 
   alloy:
     image: grafana/alloy:latest
@@ -65,6 +55,14 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SMTP_ENABLED=true
+      - GF_SMTP_HOST=mailpit:1025
+      - GF_SMTP_USER=
+      - GF_SMTP_PASSWORD=
+      - GF_SMTP_FROM_ADDRESS=grafana@local.test
+      - GF_SMTP_FROM_NAME=Grafana
+      - GF_SMTP_SKIP_VERIFY=true
+      - GF_SMTP_STARTTLS_POLICY=NoStartTLS
     volumes:
       - grafana-data:/var/lib/grafana
       - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
@@ -72,8 +70,18 @@ services:
       - loki
     restart: unless-stopped
 
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mailpit
+    ports:
+    #  - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
+    restart: unless-stopped
 volumes:
   grafana-data:
     name: grafana-data
   alloy-data:
     name: alloy-data
+networks:
+  network-postgres:
+    external: true

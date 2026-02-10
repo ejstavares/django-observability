@@ -1,4 +1,11 @@
-### Install k6
+# Load and performance test using k6
+
+## RUN k6 test wiwith docker
+```bash
+docker run --rm -i --network=network-postgres grafana/k6 run - <script.js
+```
+
+## OR Install k6 (Manually)
 To install K6 follow instruction here: 
 https://grafana.com/docs/k6/latest/set-up/install-k6/#install-k6
 
